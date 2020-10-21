@@ -1,0 +1,176 @@
+Header
+  CHECK KEYWORDS Warn
+  Mesh DB "." "."
+  Include Path ""
+  Results Directory ""
+End
+
+Simulation
+  Max Output Level = 5
+  Coordinate System = Cartesian
+  Coordinate Mapping(3) = 1 2 3
+  Simulation Type = Steady state
+  Steady State Max Iterations = 100
+  Output Intervals = 1
+  Timestepping Method = BDF
+  BDF Order = 1
+  Solver Input File = case.sif
+  Post File = case.vtu
+End
+
+Constants
+  Gravity(4) = 0 -1 0 9.82
+  Stefan Boltzmann = 5.67e-08
+  Permittivity of Vacuum = 8.8542e-12
+  Boltzmann Constant = 1.3807e-23
+  Unit Charge = 1.602e-19
+End
+
+! ------ MATERIALS -------
+
+Material 1
+  Name = "Air (room temperature)"
+  Density = 1.205
+  Electric Conductivity = Real 0.0
+  Relative Permeability = Real 1.0
+End
+
+Material 2
+  Name = "Copper (generic)"
+  Electric Conductivity = Real 6.0e3
+  Relative Permeability = Real 1.0
+  Density = 8960.0
+  Youngs modulus = 115.0e9
+  Poisson ratio = 0.34
+End
+
+! ------- BODIES ----------
+
+Body 1
+  Target Bodies(1) = 1
+  Name = "Air"
+  Material = 1
+  Equation = 1
+End
+
+Body 2
+  Target Bodies(1) = 2
+  Name = "Wire"
+  Equation = 1
+  Material = 2
+End
+
+! --------- SOLVERS --------
+
+Solver 1
+	Equation = "Static Current Driver"
+	Exec Solver = always ! before simulation
+	Calculate Loads = False
+	Variable = Potential
+	Variable DOFs = 1
+	Procedure = "StatCurrentSolve" "StatCurrentSolver"
+	Stabilize = True
+	Bubbles = False
+	Lumped Mass Matrix = False
+	Optimize Bandwidth = True
+	Calculate Volume Current = True
+	Calculate Joule Heating = False
+	Steady State Convergence Tolerance = 1.0e-11
+	Nonlinear System Convergence Tolerance = 1e-11
+	Nonlinear System Max Iterations = 500
+	Nonlinear System Newton After Iterations = 6
+	Nonlinear System Newton After Tolerance = 1.0e-11
+	Nonlinear System Relaxation Factor = 1
+	Linear System Solver = Iterative
+	Linear System Iterative Method = BiCGStab
+	Linear System Max Iterations = 20000
+	Linear System Convergence Tolerance = 1.0e-11
+	Linear System Preconditioning = ILU0
+	Linear System ILUT Tolerance = 1.0e-11
+	Linear System Abort Not Converged = False
+	Linear System Residual Output = 1
+	Linear System Precondition Recompute = 1
+End
+
+Solver 2
+       Equation = "MGDynamics"
+       Exec Solver = always
+       Variable = "A"
+
+       Procedure = "MagnetoDynamics" "WhitneyAVSolver"
+       Fix Input Current Density = Logical True
+
+!       Newton-Raphson Iteration = Logical True
+       Nonlinear System Max Iterations = 1
+       Nonlinear System Convergence Tolerance = 1.0e-10
+
+!       Linear System Symmetric = Logical True
+       Linear System Solver = "Iterative"
+       Linear System Preconditioning =  None
+       Linear System Convergence Tolerance = 1.0e-10
+       Linear System Residual Output = 100
+       Linear System Max Iterations = 200000
+       Linear System Iterative Method =  CG
+       Steady State Convergence Tolerance = 1.0e-10
+End
+
+Solver 3
+ 	Equation = "MGDynamicsCalc"
+	Exec Solver = always
+  	Procedure = "MagnetoDynamics" "MagnetoDynamicsCalcFields"
+  	Linear System Symmetric = True
+	
+  	Potential Variable = String "A"
+	
+ 	Calculate Magnetic Vector Potential = Logical True
+ 	Calculate Current Density = Logical True
+  	Calculate Joule Heating = Logical True
+  	Calculate Electric Field = Logical True
+ 	Calculate Magnetic Flux Density = Logical True
+	Calculate Magnetic Field Strength = Logical True
+
+  	Steady State Convergence Tolerance = 1
+ 	Linear System Solver = "Iterative"
+ 	Linear System Preconditioning = none !ILU2
+ 	Linear System Residual Output = 0
+  	Linear System Max Iterations = 25000
+ 	Linear System Iterative Method = Bicgstabl
+	Linear System Convergence Tolerance = 1.0e-10
+End 
+
+Solver 4
+  	Exec Solver =  After simulation
+  	! Exec Interval = 2
+  	Equation = "result output"
+  	Procedure = "ResultOutputSolve" "ResultOutputSolver"
+  	Save Geometry Ids = Logical True ! add this line if you want to access boundaries in Paraview
+  	Output File Name = File "ext"
+  	Output Format = String vtu
+End
+
+! -------- EQUATIONS ----------
+
+Equation 1
+  Name = "Current and Magnetic field"
+  Active Solvers(4) = 1 2 3 4
+End
+
+! ------- BOUNDARY CONDITIONS -------
+
+Boundary Condition 1
+  Target Boundaries(1) = 2 
+  Name = "U"
+  Potential = 1
+End
+
+Boundary Condition 2
+  Target Boundaries(1) = 3 
+  Name = "ground"
+  Potential = 0
+End
+
+Boundary condition 3 
+  name = "Far"
+  target boundaries (1) = 4
+  A = real 0
+End
