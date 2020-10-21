@@ -2,7 +2,7 @@ Header
   CHECK KEYWORDS Warn
   Mesh DB "." "test"
   Include Path ""
-  Results Directory "."
+  Results Directory "results"
 End
 
 Simulation
@@ -50,7 +50,7 @@ Body 1
   Target Bodies(1) = 1
   Name = "Air"
   Material = 1
-  Equation = 1
+  Equation = 2
 End
 
 Body 2
@@ -58,6 +58,7 @@ Body 2
   Name = "Wire"
   Equation = 1
   Material = 2
+  Body Force = 1
 End
 
 ! --------- SOLVERS --------
@@ -153,6 +154,19 @@ End
 Equation 1
   Name = "Current and Magnetic field"
   Active Solvers(4) = 1 2 3 4
+End
+
+Equation 2 
+  Name = "Magnetic Field"
+  Active Solvers(3) = 2 3 4
+
+!---------BODY FORCE------
+
+Body Force 1
+	Name = "Current Density1"
+	Current Density 1 = Equals Volume current 1
+	Current Density 2 = Equals Volume current 2
+	Current Density 3 = Equals Volume current 3
 End
 
 ! ------- BOUNDARY CONDITIONS -------
