@@ -159,6 +159,7 @@ End
 Equation 2 
   Name = "Magnetic Field"
   Active Solvers(3) = 2 3 4
+End
 
 !---------BODY FORCE------
 
@@ -184,7 +185,7 @@ Boundary Condition 2
 End
 
 Boundary condition 3 
-  name = "Far"
-  target boundaries (1) = 4
+  Name = "Far"
+  Target Boundaries(1) = 4
   A = real 0
 End
