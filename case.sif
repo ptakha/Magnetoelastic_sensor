@@ -15,7 +15,6 @@ Simulation
   Timestepping Method = BDF
   BDF Order = 1
   Solver Input File = case.sif
-  Post File = case.vtu
 End
 
 Constants
@@ -147,6 +146,11 @@ Solver 4
   	Save Geometry Ids = Logical True ! add this line if you want to access boundaries in Paraview
   	Output File Name = File "ext"
   	Output Format = String vtu
+	Vector Field 1 = String Magnetic Flux Density
+        Vector Field 2 = String Magnetic Field Strength
+        Vector Field 3 = String Magnetic Vector Potential
+        Vector Field 4 = String Electric Field
+        Vector Field 5 = String Current Density
 End
 
 ! -------- EQUATIONS ----------
